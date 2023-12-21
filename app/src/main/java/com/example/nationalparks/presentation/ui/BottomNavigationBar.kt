@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -35,13 +36,16 @@ fun BottomNavBar(changeScreen: (BottomNav) -> Unit, navController: NavController
                 onClick = {
                     changeScreen(bottomNav)
                 },
-                icon = { Icon(painter = painterResource(id = bottomNav.icon), contentDescription = null) },
+                icon = {
+                    Icon(painter = painterResource(id = bottomNav.icon), contentDescription = null,
+                        tint = if(currentRoute == bottomNav.route) Color(0xFF61AF2B) else Color(0xFF8C8C8C))
+                       },
                 colors = NavigationBarItemDefaults.colors(
-                    unselectedTextColor = Color.Unspecified, selectedTextColor = Color(0xFF61AF2B)
+                    unselectedTextColor = Color.Unspecified, selectedTextColor = Color(0xFF61AF2B), indicatorColor = Color.White
                 ),
                 label = {
                     Text(
-                        text = "Explore",
+                        text = stringResource(id = bottomNav.title),
                         style = TextStyle(
                             fontSize = 12.sp,
                             lineHeight = 21.sp,
