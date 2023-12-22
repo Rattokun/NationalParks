@@ -1,8 +1,15 @@
 package com.example.nationalparks.presentation.main
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.util.Log
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,6 +44,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.nationalparks.R
 import com.example.nationalparks.domain.catalog.vo.AlertVO
@@ -47,6 +56,11 @@ import com.example.nationalparks.presentation.ui.BottomNavBar
 import com.example.nationalparks.presentation.ui.CategoryCard
 import com.example.nationalparks.presentation.ui.PlantCard
 import com.example.nationalparks.presentation.ui.TopNavBar
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.concurrent.Executor
+import java.util.jar.Manifest
 
 @Composable
 fun MainScreen(mViewModel: MainViewModel){
@@ -57,7 +71,8 @@ fun MainScreen(mViewModel: MainViewModel){
                 .padding(20.dp)
                 .fillMaxWidth()
                 .height(48.dp)
-                .background(color = Color(0xFFEEF7E8), shape = RoundedCornerShape(size = 8.dp))) {
+                .background(color = Color(0xFFEEF7E8), shape = RoundedCornerShape(size = 8.dp))
+                .clickable { mViewModel.listener.openCamera(true) }) {
                 Icon(painter = painterResource(id = R.drawable.ic_scan), contentDescription = "", modifier = Modifier.size(24.dp))
                 Text(
                     text = "Scan and identify the plant",
