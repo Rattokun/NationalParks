@@ -1,4 +1,4 @@
-package com.example.nationalparks.ui.theme
+package com.example.nationalparks.presentation.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

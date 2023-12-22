@@ -1,4 +1,4 @@
-package com.example.nationalparks.ui.theme
+package com.example.nationalparks.presentation.ui.theme
 
 import android.app.Activity
 import android.os.Build
