@@ -1,22 +1,25 @@
 package com.example.nationalparks.presentation.main
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.nationalparks.data.navigation.BottomNav
 import com.example.nationalparks.data.navigation.MainDestinations
 import com.example.nationalparks.data.repository.MainRepository
+import com.example.nationalparks.data.repository.pojo.plants.PlantData
+import com.example.nationalparks.data.repository.pojo.plants.PlantDataResponse
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import java.util.concurrent.Flow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(savedStateHandle: SavedStateHandle,
-    mainRepository: MainRepository): ViewModel() {
+    val mainRepository: MainRepository): ViewModel() {
 
     private val mCurrentScreen: MutableStateFlow<String> = MutableStateFlow(MainDestinations.HOME)
 
@@ -25,13 +28,21 @@ class MainViewModel @Inject constructor(savedStateHandle: SavedStateHandle,
         get() = mShouldShowCamera
     val currentScreen: StateFlow<String>
         get() = mCurrentScreen
+    val fPlants: MutableStateFlow<PlantData> = MutableStateFlow(PlantData(emptyList()))
+
     val listener = object : MainListener{
         override fun openCamera(isOpen: Boolean) {
             isOpenCamera(isOpen)
         }
 
         override fun onSearchClick() {
-
+            viewModelScope.launch {
+                val response = mainRepository.getPlants()
+                response.body()?.let {
+                    fPlants.value  = it
+                }
+                println(response)
+            }
         }
 
         override fun onAddClick() {
@@ -47,9 +58,17 @@ class MainViewModel @Inject constructor(savedStateHandle: SavedStateHandle,
         }
     }
 
+
+    fun getPlants(){
+        CoroutineScope(Dispatchers.IO).launch {
+            val response = mainRepository.getPlants()
+            response.body()?.let {
+                fPlants.value = it
+            }
+        }
+    }
+
     fun isOpenCamera(isOpen: Boolean){
         mShouldShowCamera.value = isOpen
     }
-
-
 }
