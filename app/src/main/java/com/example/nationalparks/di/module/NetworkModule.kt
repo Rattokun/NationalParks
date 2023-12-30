@@ -6,6 +6,8 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
@@ -15,14 +17,23 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
     @Provides
-    fun providesBaseUrl() : String = "https://example-hilt-retrofit-default-rtdb.firebaseio.com/"
+    fun providesBaseUrl() : String = "https://trefle.io/"
 
     @Provides
     @Singleton
-    fun provideRetrofit(BASE_URL : String) : Retrofit = Retrofit.Builder()
-        .addConverterFactory(GsonConverterFactory.create())
-        .baseUrl(BASE_URL)
-        .build()
+    fun provideRetrofit(baseUrl : String) : Retrofit {
+        val httpHandler = HttpLoggingInterceptor()
+        httpHandler.level = HttpLoggingInterceptor.Level.BODY
+        val client = OkHttpClient.Builder()
+            .addInterceptor(httpHandler)
+            .build()
+
+        return Retrofit.Builder()
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(client)
+            .baseUrl(baseUrl)
+            .build()
+    }
 
     @Provides
     @Singleton
@@ -31,4 +42,6 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideMainRemoteData(mainService : TrefleApi) : MainRepository = MainRepository(mainService)
+
+
 }
