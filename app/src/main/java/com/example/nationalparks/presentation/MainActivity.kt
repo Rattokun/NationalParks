@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
@@ -31,13 +32,12 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,23 +52,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navigation
 import com.example.nationalparks.R
 import com.example.nationalparks.data.navigation.BottomNav
 import com.example.nationalparks.data.navigation.MainDestinations
+import com.example.nationalparks.presentation.detail.DetailScreen
 import com.example.nationalparks.presentation.main.MainScreen
-import com.example.nationalparks.presentation.main.MainViewModel
 import com.example.nationalparks.presentation.main.ProfileScreen
+import com.example.nationalparks.presentation.main.TopBarListener
+import com.example.nationalparks.presentation.saved.SavedScreen
 import com.example.nationalparks.presentation.ui.BottomNavBar
 import com.example.nationalparks.presentation.ui.TopNavBar
 import com.example.nationalparks.presentation.ui.theme.NationalParksTheme
-import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
@@ -77,13 +77,10 @@ import java.util.concurrent.Executors
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-//
-//    @Inject
-//    lateinit var mViewModel: MainViewModel
 
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
-    private lateinit var mViewModel: MainViewModel
+
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -93,46 +90,86 @@ class MainActivity : ComponentActivity() {
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
         setContent {
-
-            mViewModel = hiltViewModel()
-            val navController = rememberNavController()
-            val currentScreen = mViewModel.currentScreen.collectAsState()
-            val shouldShowCamera = mViewModel.shouldShowCamera.collectAsState()
-            val fPlants = mViewModel.fPlants.collectAsState()
-            val gson = Gson()
-            println(gson.toJson(fPlants.value))
-            if (shouldShowCamera.value) {
-                CameraView(
-                    outputDirectory = outputDirectory,
-                    executor = cameraExecutor,
-                    onImageCaptured = ::handleImageCapture,
-                    onError = { Log.e("kilo", "View error:", it) }
-                )
+            val isSplashScreen = remember {
+                mutableStateOf(true)
             }
-            else {
-                NationalParksTheme {
-                    // A surface container using the 'background' color from the theme
-                    Surface {
-                        Card {
+            val navController = rememberNavController()
+            var selectImages = remember {
+                mutableStateOf(Uri.Builder().build())
+            }
 
-                        }
-                        Scaffold(
-                            topBar = {
-                                TopNavBar(mViewModel.listener)
-                            },
-                            bottomBar = {
+            val galleryLauncher =
+                rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+                    selectImages.value = uri
+                }
+
+            NationalParksTheme {
+                // A surface container using the 'background' color from the theme
+                Surface {
+                    Card {
+
+                    }
+                    Scaffold(
+                        topBar = {
+                            if (!isSplashScreen.value) {
+                                TopNavBar(topBarListener = object : TopBarListener {
+                                    override fun onSearchClick() {
+
+                                    }
+
+                                    override fun onAddClick() {
+                                        galleryLauncher.launch("image/*")
+                                    }
+
+                                    override fun getSearchText(text: String) {
+
+                                    }
+                                })
+                            }
+                        },
+                        bottomBar = {
+                            if (!isSplashScreen.value) {
                                 BottomNavBar(
                                     navController = navController,
-                                    changeScreen = mViewModel.listener::onChangeScreen
+                                    changeScreen = { i -> navController.navigate(i.route) }
                                 )
                             }
+                        }
+                    ) {
+                        NavHost(
+                            navController = navController,
+                            startDestination = MainDestinations.SPLASH
                         ) {
-                            NavHost(
-                                navController = navController,
-                                startDestination = currentScreen.value
-                            ) {
-                                addHomeGraph(mainViewModel = mViewModel)
+                            composable(MainDestinations.SPLASH) {
+                                SplashScreen(navController, isSplashScreen)
                             }
+                            composable(BottomNav.HOME.route) {
+                                MainScreen(isSplashScreen = isSplashScreen)
+                            }
+                            composable(BottomNav.PROFILE.route) {
+                                ProfileScreen()
+                            }
+                            composable(BottomNav.EXPLORE.route) {
+                                MainScreen(isSplashScreen = isSplashScreen)
+                            }
+                            composable(BottomNav.ARTICLES.route) {
+                                MainScreen(isSplashScreen = isSplashScreen)
+                            }
+                            composable(BottomNav.SAVED.route) {
+                                SavedScreen()
+                            }
+                            composable(MainDestinations.DETAIL){
+                                DetailScreen(isSplashScreen)
+                            }
+                        }
+                    }
+                }
+
+                LaunchedEffect(key1 = selectImages.value) {
+                    if(selectImages.value?.path?.isNotEmpty() == true){
+                        launch {
+                            delay(2000)
+                            navController.navigate(MainDestinations.DETAIL)
                         }
                     }
                 }
@@ -153,11 +190,6 @@ class MainActivity : ComponentActivity() {
         cameraExecutor.shutdown()
     }
 
-    private fun handleImageCapture(uri: Uri) {
-        Log.i("kilo", "Image captured: $uri")
-        mViewModel.isOpenCamera(false)
-    }
-
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -167,6 +199,7 @@ class MainActivity : ComponentActivity() {
             Log.i("kilo", "Permission denied")
         }
     }
+
     private fun requestCameraPermission() {
         when {
             ContextCompat.checkSelfPermission(
@@ -185,39 +218,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-
-
-fun NavGraphBuilder.navGraph(mainViewModel: MainViewModel) {
-    navigation(
-        route = MainDestinations.HOME,
-        startDestination = BottomNav.HOME.route
-    ) {
-        addHomeGraph(mainViewModel = mainViewModel)
-    }
-}
-
-fun NavGraphBuilder.addHomeGraph(
-    modifier: Modifier = Modifier,
-    mainViewModel: MainViewModel
-) {
-    composable(BottomNav.HOME.route) {
-        MainScreen(mainViewModel)
-    }
-    composable(BottomNav.PROFILE.route) {
-        ProfileScreen()
-    }
-    composable(BottomNav.EXPLORE.route) {
-        MainScreen(mainViewModel)
-    }
-    composable(BottomNav.ARTICLES.route) {
-        MainScreen(mainViewModel)
-    }
-    composable(BottomNav.SAVED.route) {
-        MainScreen(mainViewModel)
-    }
-}
-
 
 @Composable
 fun CameraView(
@@ -247,8 +247,6 @@ fun CameraView(
             cameraSelector,
             imageCapture
         )
-
-
     }
 
     // 3
@@ -284,7 +282,7 @@ fun CameraView(
 }
 
 @Composable
-fun BuildAll(){
+fun BuildAll() {
     Column(modifier = Modifier.padding(16.dp)) {
         StartOfWork()
         TakePhoto()
@@ -292,42 +290,66 @@ fun BuildAll(){
 }
 
 @Composable
-fun TakePhoto(){
+fun TakePhoto() {
     val cam = painterResource(id = R.drawable.base_camera)
     val magick = painterResource(id = R.drawable.base_magick)
     val add = painterResource(id = R.drawable.baseline_add_24)
-    Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween)
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween)
     {
-        Box(modifier = Modifier
-            .size(75.dp)
-            .clip(RoundedCornerShape(1.dp))
-            .border(BorderStroke(2.dp, Color.Black))){
-            Column (modifier = Modifier
-                .fillMaxWidth(0.6F)
-                .align(Alignment.Center)){
-                Image(painter = cam, contentDescription = null, contentScale = ContentScale.FillWidth)
+        Box(
+            modifier = Modifier
+                .size(75.dp)
+                .clip(RoundedCornerShape(1.dp))
+                .border(BorderStroke(2.dp, Color.Black))
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(0.6F)
+                    .align(Alignment.Center)
+            ) {
+                Image(
+                    painter = cam,
+                    contentDescription = null,
+                    contentScale = ContentScale.FillWidth
+                )
                 Text(text = "Take Photo")
             }
         }
-        Box(modifier = Modifier
-            .size(75.dp)
-            .clip(RoundedCornerShape(1.dp))
-            .border(BorderStroke(2.dp, Color.Black))){
-            Column (modifier = Modifier
-                .fillMaxWidth(0.6F)
-                .align(Alignment.Center)) {
-                Image(painter = magick, contentDescription = null, contentScale = ContentScale.FillWidth)
+        Box(
+            modifier = Modifier
+                .size(75.dp)
+                .clip(RoundedCornerShape(1.dp))
+                .border(BorderStroke(2.dp, Color.Black))
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(0.6F)
+                    .align(Alignment.Center)
+            ) {
+                Image(
+                    painter = magick,
+                    contentDescription = null,
+                    contentScale = ContentScale.FillWidth
+                )
                 Text(text = "Identify")
             }
         }
-        Box(modifier = Modifier
-            .size(75.dp)
-            .clip(RoundedCornerShape(1.dp))
-            .border(BorderStroke(2.dp, Color.Black))){
-            Column (modifier = Modifier
-                .fillMaxWidth(0.6F)
-                .align(Alignment.Center)) {
-                Image(painter = add, contentDescription = null, contentScale = ContentScale.FillWidth)
+        Box(
+            modifier = Modifier
+                .size(75.dp)
+                .clip(RoundedCornerShape(1.dp))
+                .border(BorderStroke(2.dp, Color.Black))
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(0.6F)
+                    .align(Alignment.Center)
+            ) {
+                Image(
+                    painter = add,
+                    contentDescription = null,
+                    contentScale = ContentScale.FillWidth
+                )
                 Text(text = "Add Photo")
             }
         }
@@ -339,16 +361,16 @@ fun StartOfWork() {
     val image = painterResource(R.drawable.header)
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Image(
-                modifier = Modifier.fillMaxWidth(),
-                painter = image,
-                contentDescription = null,
-                contentScale = ContentScale.FillBounds
-            )
+        Image(
+            modifier = Modifier.fillMaxWidth(),
+            painter = image,
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds
+        )
         Text("Welcome to National")
         Text("Start by taking a picture of animal")
-        }
     }
+}
 
 
 @Preview(showBackground = true)

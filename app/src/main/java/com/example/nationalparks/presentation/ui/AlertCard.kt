@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -34,7 +35,8 @@ fun AlertCard(alertVO: AlertVO, modifier: Modifier = Modifier){
             painter = painterResource(id = alertVO.image),
             contentDescription = "image description",
             contentScale = ContentScale.FillBounds,
-            modifier = Modifier.size(50.dp).background(color = Color(0x08000000), shape = RoundedCornerShape(size = 6.dp))
+            modifier = Modifier.size(50.dp)
+                .clip(RoundedCornerShape(size = 6.dp))
         )
 
         Column(verticalArrangement = Arrangement.Center, modifier = Modifier.padding(start = 16.dp)) {

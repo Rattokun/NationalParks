@@ -1,5 +1,6 @@
 package com.example.nationalparks.di.module
 
+import com.example.nationalparks.data.network.AuthApi
 import com.example.nationalparks.data.network.TrefleApi
 import com.example.nationalparks.data.repository.MainRepository
 import dagger.Module
@@ -43,5 +44,8 @@ object NetworkModule {
     @Singleton
     fun provideMainRemoteData(mainService : TrefleApi) : MainRepository = MainRepository(mainService)
 
+    @Provides
+    @Singleton
+    fun provideAuthService(retrofit : Retrofit) : AuthApi = retrofit.create(AuthApi::class.java)
 
 }

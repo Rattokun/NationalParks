@@ -1,11 +1,11 @@
 package com.example.nationalparks.data.usecase
 
-import ru.woyfit.domain.user.AuthUseCase
-import ru.woyfit.domain.user.UserRepository
+import com.example.nationalparks.domain.user.AuthUseCase
+import com.example.nationalparks.domain.user.UserRepository
 
 class AuthUseCaseImpl(
     private val userRepository: UserRepository
-):AuthUseCase {
+): AuthUseCase {
     override suspend fun registerUser(username: String, password: String) {
         userRepository.registerUser(username, password)
     }

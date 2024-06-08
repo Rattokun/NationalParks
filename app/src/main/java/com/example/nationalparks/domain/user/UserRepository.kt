@@ -1,4 +1,4 @@
-package ru.woyfit.domain.user
+package com.example.nationalparks.domain.user
 
 interface UserRepository {
     suspend fun getToken(): String
