@@ -33,7 +33,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,7 +71,8 @@ import java.util.concurrent.Executors
 import java.util.jar.Manifest
 
 @Composable
-fun         MainScreen(mViewModel: MainViewModel = hiltViewModel()){
+fun MainScreen(mViewModel: MainViewModel = hiltViewModel(), isSplashScreen: MutableState<Boolean>){
+    isSplashScreen.value = false
     val lazyListState = rememberLazyListState()
     val shouldShowCamera = mViewModel.shouldShowCamera.collectAsState()
     val context = LocalContext.current
@@ -113,7 +116,7 @@ fun         MainScreen(mViewModel: MainViewModel = hiltViewModel()){
                     .padding(top = 28.dp, start = 20.dp, end = 20.dp)
                     .fillMaxWidth()) {
                     Text(
-                        text = "Popular plants",
+                        text = "Popular animals",
                         style = TextStyle(
                             fontSize = 18.sp,
                             fontWeight = FontWeight(500),
@@ -216,13 +219,13 @@ fun         MainScreen(mViewModel: MainViewModel = hiltViewModel()){
                     )
                 }
             }
-            item{
+            item {
                 AlertVO.default.forEachIndexed { index, alertVO ->
                     if(index == 0){
                         Spacer(modifier = Modifier.padding(top = 8.dp))
                     }
 
-                    AlertCard(alertVO = alertVO, modifier = Modifier.padding(top = 16.dp, start = 20.dp, end = 20.dp))
+                    AlertCard(alertVO = alertVO, modifier = Modifier.padding(top = 16.dp, start = 20.dp, end = 30.dp))
                 }
             }
             
@@ -285,6 +288,6 @@ fun PreviewMainScreen(){
 //            BottomNavBar()
         }
     ) {
-        MainScreen(mViewModel = hiltViewModel())
+        MainScreen(mViewModel = hiltViewModel(), mutableStateOf(false))
     }
 }

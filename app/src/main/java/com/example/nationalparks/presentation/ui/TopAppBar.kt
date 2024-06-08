@@ -27,8 +27,8 @@ fun TopNavBar(topBarListener: TopBarListener){
     TopAppBar(title = { Text(
         text = "Animal identification",
         style = TextStyle(
-            fontSize = 24.sp,
-            fontWeight = FontWeight(700),
+            fontSize = 20.sp,
+            fontWeight = FontWeight(500),
             color = Color(0xFF333333),
         )
     ) }, actions = {

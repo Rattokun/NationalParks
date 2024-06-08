@@ -64,9 +64,7 @@ dependencies {
 //    Navigation
     implementation("androidx.navigation:navigation-compose:$nav_version")
 
-
-
-    implementation ("androidx.compose.foundation:foundation")
+    implementation("androidx.compose.foundation:foundation")
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation("androidx.activity:activity-compose:1.7.0")
@@ -93,19 +91,20 @@ dependencies {
 
     // CameraX
     val camerax_version = "1.3.1"
-    implementation ("androidx.camera:camera-camera2:$camerax_version")
-    implementation ("androidx.camera:camera-lifecycle:$camerax_version")
-    implementation ("androidx.camera:camera-view:1.3.1")
+    implementation("androidx.camera:camera-camera2:$camerax_version")
+    implementation("androidx.camera:camera-lifecycle:$camerax_version")
+    implementation("androidx.camera:camera-view:1.3.1")
 
     // Icons
     runtimeOnly("androidx.compose.material:material-icons-extended:1.5.4")
 
 
     //Retrofit
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.5.0")
-
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.5.0")
     implementation("com.squareup.okhttp3:logging-interceptor:3.8.0")
+
+    implementation("io.coil-kt:coil-compose:1.3.2")
 
 }
 

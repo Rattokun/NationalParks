@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
@@ -31,13 +32,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -53,25 +52,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navigation
 import com.example.nationalparks.R
 import com.example.nationalparks.data.navigation.BottomNav
 import com.example.nationalparks.data.navigation.MainDestinations
+import com.example.nationalparks.presentation.detail.DetailScreen
 import com.example.nationalparks.presentation.main.MainScreen
-import com.example.nationalparks.presentation.main.MainViewModel
 import com.example.nationalparks.presentation.main.ProfileScreen
 import com.example.nationalparks.presentation.main.TopBarListener
+import com.example.nationalparks.presentation.saved.SavedScreen
 import com.example.nationalparks.presentation.ui.BottomNavBar
 import com.example.nationalparks.presentation.ui.TopNavBar
 import com.example.nationalparks.presentation.ui.theme.NationalParksTheme
-import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
@@ -97,6 +94,14 @@ class MainActivity : ComponentActivity() {
                 mutableStateOf(true)
             }
             val navController = rememberNavController()
+            var selectImages = remember {
+                mutableStateOf(Uri.Builder().build())
+            }
+
+            val galleryLauncher =
+                rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+                    selectImages.value = uri
+                }
 
             NationalParksTheme {
                 // A surface container using the 'background' color from the theme
@@ -113,7 +118,7 @@ class MainActivity : ComponentActivity() {
                                     }
 
                                     override fun onAddClick() {
-
+                                        galleryLauncher.launch("image/*")
                                     }
 
                                     override fun getSearchText(text: String) {
@@ -126,7 +131,7 @@ class MainActivity : ComponentActivity() {
                             if (!isSplashScreen.value) {
                                 BottomNavBar(
                                     navController = navController,
-                                    changeScreen = { i -> i.route }
+                                    changeScreen = { i -> navController.navigate(i.route) }
                                 )
                             }
                         }
@@ -139,20 +144,32 @@ class MainActivity : ComponentActivity() {
                                 SplashScreen(navController, isSplashScreen)
                             }
                             composable(BottomNav.HOME.route) {
-                                MainScreen()
+                                MainScreen(isSplashScreen = isSplashScreen)
                             }
                             composable(BottomNav.PROFILE.route) {
                                 ProfileScreen()
                             }
                             composable(BottomNav.EXPLORE.route) {
-                                MainScreen()
+                                MainScreen(isSplashScreen = isSplashScreen)
                             }
                             composable(BottomNav.ARTICLES.route) {
-                                MainScreen()
+                                MainScreen(isSplashScreen = isSplashScreen)
                             }
                             composable(BottomNav.SAVED.route) {
-                                MainScreen()
+                                SavedScreen()
                             }
+                            composable(MainDestinations.DETAIL){
+                                DetailScreen(isSplashScreen)
+                            }
+                        }
+                    }
+                }
+
+                LaunchedEffect(key1 = selectImages.value) {
+                    if(selectImages.value?.path?.isNotEmpty() == true){
+                        launch {
+                            delay(2000)
+                            navController.navigate(MainDestinations.DETAIL)
                         }
                     }
                 }
