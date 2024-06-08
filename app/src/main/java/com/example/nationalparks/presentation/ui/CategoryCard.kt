@@ -33,12 +33,12 @@ fun CategoryCard(categoryVO: CategoryVO, modifier: Modifier = Modifier){
                 ),
         ){
             Icon(painter = painterResource(id = categoryVO.icon), contentDescription = null, tint = categoryVO.iconColor, modifier = Modifier
-                .size(18.dp)
+                .size(25.dp)
                 .align(Alignment.Center))
         }
         Column(modifier = Modifier.padding(start = 14.dp)) {
             Text(
-                text = "${categoryVO.total} Plants",
+                text = "${categoryVO.total} species",
                 style = TextStyle(
                     fontSize = 12.sp,
                     lineHeight = 18.sp,

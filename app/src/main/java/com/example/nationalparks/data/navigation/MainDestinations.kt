@@ -6,4 +6,5 @@ object MainDestinations {
     const val ARTICLES = "articles"
     const val SAVED = "saved"
     const val PROFILE = "profile"
+    const val SPLASH = "splash"
 }

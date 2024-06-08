@@ -25,7 +25,7 @@ import com.example.nationalparks.presentation.main.TopBarListener
 @Composable
 fun TopNavBar(topBarListener: TopBarListener){
     TopAppBar(title = { Text(
-        text = "My Plants",
+        text = "Animal identification",
         style = TextStyle(
             fontSize = 24.sp,
             fontWeight = FontWeight(700),

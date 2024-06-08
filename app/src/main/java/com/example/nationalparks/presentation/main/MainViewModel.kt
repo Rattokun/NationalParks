@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.nationalparks.data.navigation.BottomNav
 import com.example.nationalparks.data.navigation.MainDestinations
 import com.example.nationalparks.data.repository.MainRepository
+import com.example.nationalparks.data.repository.UserRepositoryImpl
 import com.example.nationalparks.data.repository.pojo.plants.PlantData
 import com.example.nationalparks.data.repository.pojo.plants.PlantDataResponse
 import com.google.gson.Gson
@@ -19,7 +20,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(savedStateHandle: SavedStateHandle,
-    val mainRepository: MainRepository): ViewModel() {
+    val mainRepository: MainRepository,
+    val userRepositoryImpl: UserRepositoryImpl): ViewModel() {
 
     private val mCurrentScreen: MutableStateFlow<String> = MutableStateFlow(MainDestinations.HOME)
 
